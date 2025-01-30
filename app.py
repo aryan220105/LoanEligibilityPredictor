@@ -72,7 +72,7 @@ def add_css_animations():
 # Streamlit App UI
 def main():
     st.title("Loan Eligibility Predictor")
-    st.set_page_config(page_title="Loan Eligibility Predictor")
+    # st.set_page_config(page_title="Loan Eligibility Predictor")
     st.write("Enter your details below to check your loan eligibility.")
 
     # Add some CSS animations and little bit of styling too 
