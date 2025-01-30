@@ -13,6 +13,7 @@ An application for prediction loan eligibility for applicants based on their per
 - [Overview](#overview)
 - [Features](#features)
 - [Installation](#installation)
+- [License](#license)
 
 ---
 
