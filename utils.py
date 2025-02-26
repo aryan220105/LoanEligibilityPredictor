@@ -62,7 +62,9 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
 def add_features(df: pd.DataFrame) -> pd.DataFrame: 
     # Adding more features so my model can be fucking accurate
     df['Total_Income'] = df['ApplicantIncome'] + df['CoapplicantIncome']
-    df['Income_to_Loan'] = df['Total_Income'] / df['LoanAmount']
+    df['EMI'] = df['LoanAmount'] / df['Loan_Amount_Term']   # monthly loan amount
+    df['DTI'] = df['EMI'] / df['Total_Income']              # debt to income ratio
+    df['Loan_Income_Ratio'] = df['LoanAmount'] / df['Total_Income']
     df['Debt_to_Income'] = df['LoanAmount'] / df['Total_Income']
     return df
 
