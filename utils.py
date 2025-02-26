@@ -39,8 +39,10 @@ def impute_data(df, label_encoding: bool = False):
     df[numerical_cols] = numerical_imputer.fit_transform(df[numerical_cols])
     
     # Fill NaN-values of categorical columns with Imputer
-    categorical_cols = ['Gender', 'Married', 'Dependents', 'Education', 'Self_Employed']
+    categorical_cols = ['Gender', 'Married', 'Education', 'Self_Employed']
     df[categorical_cols] = categorical_imputer.fit_transform(df[categorical_cols])
+    
+    df['Dependents'] = df['Dependents'].replace('3+', 3).astype(float) 
         
     # # Encode categorical variables with one hot encoding
     # encoder = LabelEncoder() if label_encoding else OneHotEncoder()
@@ -66,6 +68,8 @@ def add_features(df: pd.DataFrame) -> pd.DataFrame:
     df['DTI'] = df['EMI'] / df['Total_Income']              # debt to income ratio
     df['Loan_Income_Ratio'] = df['LoanAmount'] / df['Total_Income']
     df['Debt_to_Income'] = df['LoanAmount'] / df['Total_Income']
+    df['Income_Per_Capita'] = df['Total_Income'] / (df['Dependents'] + 1) # +1 to include payee 
+    df['Income_to_EMI_Ratio'] = df['Total_Income'] / df['EMI']
     return df
 
 def get_train_test_data(train_data: pd.DataFrame, test_data: pd.DataFrame): 
