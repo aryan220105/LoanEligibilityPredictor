@@ -2,7 +2,7 @@ import pandas as pd
 from pathlib import Path
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 
 def df_NaN_Status(df: pd.DataFrame, normalize=False): 
     total = df.shape[0]
@@ -26,7 +26,7 @@ def load_model(fp: Path) -> RandomForestClassifier:
     return model
 
 # Data processing
-def preprocess_data(df):
+def impute_data(df, label_encoding: bool = False):
     """Handle missing numerical missing values via imputing and encode categorical values"""
     df = df.copy()
     
@@ -39,15 +39,23 @@ def preprocess_data(df):
     df[numerical_cols] = numerical_imputer.fit_transform(df[numerical_cols])
     
     # Fill NaN-values of categorical columns with Imputer
-    # categorical_cols = ['Gender', 'Married', 'Dependents', 'Education', 'Self_Employed', 'Credit_History']
     categorical_cols = ['Gender', 'Married', 'Dependents', 'Education', 'Self_Employed']
     df[categorical_cols] = categorical_imputer.fit_transform(df[categorical_cols])
         
-    # Encode categorical variables
-    le = LabelEncoder()
-    for col in categorical_cols + ['Property_Area']:
-        df[col] = le.fit_transform(df[col])
+    # # Encode categorical variables with one hot encoding
+    # encoder = LabelEncoder() if label_encoding else OneHotEncoder()
+    # for col in categorical_cols + ['Property_Area']:
+    #     df[col] = encoder.fit_transform(df[col])
     
+    return df
+
+def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
+    """Get the imputed data and encode categorical values via one hot encoding"""
+    df = impute_data(df)
+    categorical_cols: list[str] = ['Gender', 'Married', 'Dependents', 'Education', 'Self_Employed', 'Property_Area']
+    encoder = LabelEncoder() if LabelEncoder else OneHotEncoder()
+    for col in categorical_cols: 
+        df[col] = encoder.fit_transform(df[col])
     return df
 
 # Data Engineering 
@@ -78,3 +86,12 @@ def predict_loan_eligibility(model, input_data):
     prediction = model.predict(input_df)[0]
     confidence = model.predict_proba(input_df)[0][1]
     return 'Y' if prediction == 1 else 'N', confidence
+
+def conf_to_canvas(confidence: float) -> float:
+    if confidence <= 40:
+        return 0.25  
+    elif confidence >= 60:
+        return 0.98  
+    normalized = (confidence - 40) / 20  
+    dramatized = normalized ** 2 if confidence < 50 else 1 - (1 - normalized) ** 2
+    return 0.25 + dramatized * (0.98 - 0.25)

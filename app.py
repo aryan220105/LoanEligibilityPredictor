@@ -2,8 +2,9 @@
 import streamlit as st
 import pandas as pd
 import joblib
-from utils import preprocess_data, add_features
+from utils import *
 from pathlib import Path
+import numpy as np 
 
 # Load the trained model
 MODEL_PATH: Path = Path("./model/loanPredictorModel.pkl").resolve()
@@ -74,11 +75,9 @@ def main():
     st.title("Loan Eligibility Predictor")
     # st.set_page_config(page_title="Loan Eligibility Predictor")
     st.write("Enter your details below to check your loan eligibility.")
-
-    # Add some CSS animations and little bit of styling too 
     add_css_animations()
 
-    # Arrange form into two columns
+    # two col form 
     col1, col2 = st.columns(2)
 
     with col1:
@@ -98,9 +97,8 @@ def main():
 
     property_area = st.selectbox("🏡 Property Area", ["Urban", "Rural", "Semiurban"])
 
-    # On Submit
+    # On Submit click
     if st.button("Check Eligibility"):
-        # Prepare input data
         input_data = {
             'Gender': gender,
             'Married': married,
@@ -115,7 +113,8 @@ def main():
         }
 
         status, confidence = predict_loan_eligibility(input_data)
-
+        print(f"{confidence:.3f}%")
+        
         # Animmated results
         if status == "Approved":
             st.markdown(f'<p class="approved">🎉 Loan Status: {status}</p>', unsafe_allow_html=True)
@@ -129,7 +128,7 @@ def main():
             <div class="confidence-fill" style="width: {confidence * 100}%;"></div>
         </div>
         """, unsafe_allow_html=True)
-        st.write(f"{confidence:.2%}")
+        st.write(f"{confidence * 100:.2f}")
 
 if __name__ == "__main__":
     main()
