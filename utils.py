@@ -43,11 +43,6 @@ def impute_data(df, label_encoding: bool = False):
     df[categorical_cols] = categorical_imputer.fit_transform(df[categorical_cols])
     
     df['Dependents'] = df['Dependents'].replace('3+', 3).astype(float) 
-        
-    # # Encode categorical variables with one hot encoding
-    # encoder = LabelEncoder() if label_encoding else OneHotEncoder()
-    # for col in categorical_cols + ['Property_Area']:
-    #     df[col] = encoder.fit_transform(df[col])
     
     return df
 
@@ -62,11 +57,10 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
 
 # Data Engineering 
 def add_features(df: pd.DataFrame) -> pd.DataFrame: 
-    # Adding more features so my model can be fucking accurate
+    # Adding more features so my model can be accurate
     df['Total_Income'] = df['ApplicantIncome'] + df['CoapplicantIncome']
     df['EMI'] = df['LoanAmount'] / df['Loan_Amount_Term']   # monthly loan amount
     df['DTI'] = df['EMI'] / df['Total_Income']              # debt to income ratio
-    df['Loan_Income_Ratio'] = df['LoanAmount'] / df['Total_Income']
     df['Debt_to_Income'] = df['LoanAmount'] / df['Total_Income']
     df['Income_Per_Capita'] = df['Total_Income'] / (df['Dependents'] + 1) # +1 to include payee 
     df['Income_to_EMI_Ratio'] = df['Total_Income'] / df['EMI']

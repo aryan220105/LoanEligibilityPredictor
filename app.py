@@ -5,6 +5,8 @@ import joblib
 from utils import *
 from pathlib import Path
 import numpy as np 
+import warnings
+warnings.filterwarnings('ignore')
 
 # Load the trained model
 MODEL_PATH: Path = Path("./model/loanPredictorModel.pkl").resolve()
@@ -92,7 +94,7 @@ def main():
         self_employed = st.selectbox("💼 Self Employed", ["Yes", "No"])
         applicant_income = st.number_input("💰 Applicant Income", min_value=0, value=500000, step=1000)
         coapplicant_income = st.number_input("👫 Coapplicant Income", min_value=0, value=0, step=1000)
-        loan_amount = st.number_input("🏦 Loan Amount", min_value=0, value=10000, step=1000)
+        loan_amount = st.number_input("🏦 Loan Amount", min_value=0, value=100000, step=1000)
         loan_amount_term = st.number_input("⏳ Loan Amount Term (in months)", min_value=0, value=300, step=10)
 
     property_area = st.selectbox("🏡 Property Area", ["Urban", "Rural", "Semiurban"])
@@ -113,7 +115,7 @@ def main():
         }
 
         status, confidence = predict_loan_eligibility(input_data)
-        print(f"{confidence:.3f}%")
+        # print(f"{confidence:.3f}%")
         
         # Animmated results
         if status == "Approved":
