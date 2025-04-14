@@ -83,7 +83,6 @@ def train_neural_network(X_train: np.ndarray, y_train: pd.Series
     # Create model
     model = create_neural_network_model(input_shape=X_tr.shape[1])
     
-    # Callbacks for early stopping and learning rate reduction
     early_stopping = EarlyStopping(
         monitor='val_loss', 
         patience=50, 
@@ -98,8 +97,7 @@ def train_neural_network(X_train: np.ndarray, y_train: pd.Series
         min_lr=1e-6
     )
     
-    # Train model
-    history = model.fit(
+    hist = model.fit(
         X_tr, y_tr,
         validation_data=(X_val, y_val),
         epochs=200,
@@ -152,5 +150,4 @@ if __name__ == '__main__':
         raise FileNotFoundError("Incorrect file paths.") from e
     
     model, predictions, probabilities = nn_main(train_df, test_df)
-    
-    # Save the predictions or the model here.
+

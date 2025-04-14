@@ -15,7 +15,7 @@ def df_NaN_Status(df: pd.DataFrame, normalize=False):
             
 # Save the model 
 import pickle
-def save_model(model: RandomForestClassifier, fp: Path = 'model/loanPredictorModel.pkl') -> None: 
+def save_model(model: any, fp: Path = 'model/loanPredictorModel.pkl') -> None: 
     with open(fp, 'wb') as f:
         pickle.dump(model, f)
 
