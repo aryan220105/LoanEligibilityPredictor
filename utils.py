@@ -1,5 +1,7 @@
 import pandas as pd
+import numpy as np
 from pathlib import Path
+from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
@@ -56,33 +58,54 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 # Data Engineering 
-def add_features(df: pd.DataFrame) -> pd.DataFrame: 
-    # Adding more features so my model can be accurate
+def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Create more sophisticated features to improve model performance.
+    """
+    df = df.copy()
+    
     df['Total_Income'] = df['ApplicantIncome'] + df['CoapplicantIncome']
-    df['EMI'] = df['LoanAmount'] / df['Loan_Amount_Term']   # monthly loan amount
-    df['DTI'] = df['EMI'] / df['Total_Income']              # debt to income ratio
-    df['Debt_to_Income'] = df['LoanAmount'] / df['Total_Income']
-    df['Income_Per_Capita'] = df['Total_Income'] / (df['Dependents'] + 1) # +1 to include payee 
-    df['Income_to_EMI_Ratio'] = df['Total_Income'] / df['EMI']
+    df['EMI'] = df['LoanAmount'] / df['Loan_Amount_Term']
+    df['DTI'] = df['EMI'] / (df['Total_Income'] + 1)  # add 1 to prevent division by zero
+    df['Debt_to_Income'] = df['LoanAmount'] / (df['Total_Income'] + 1)
+    df['Income_Per_Capita'] = df['Total_Income'] / (df['Dependents'].astype(float) + 1)
+    df['Income_to_EMI_Ratio'] = df['Total_Income'] / (df['EMI'] + 1)  # add 1 to prevent division by zero
+    
+    # additional features
+    df['Income_Stability'] = df['CoapplicantIncome'] / (df['ApplicantIncome'] + 1)
+    df['Loan_Income_Ratio'] = df['LoanAmount'] / (df['ApplicantIncome'] + 1)
+    df['Loan_Term_Monthly'] = df['Loan_Amount_Term'] / 12  # Convert to years
+    df['Monthly_Income'] = df['Total_Income'] / 12
+    df['LoanAmount_Log'] = np.log1p(df['LoanAmount'])
+    df['ApplicantIncome_Log'] = np.log1p(df['ApplicantIncome'])
+    
+    # interactive features
+    df['Income_Education_Interaction'] = df['ApplicantIncome'] * df['Education']
+    df['Loan_Property_Interaction'] = df['LoanAmount'] * df['Property_Area']
+    
+    # log of income to better handle the skewed distribution
+    df['Log_Total_Income'] = np.log1p(df['Total_Income'])
+    
+    # polynomial features for key relationships
+    df['Income_Loan_Ratio_Squared'] = (df['Total_Income'] / (df['LoanAmount'] + 1)) ** 2
+    
     return df
 
-def get_train_test_data(train_data: pd.DataFrame, test_data: pd.DataFrame): 
+def get_train_test_data(train_data: pd.DataFrame, test_size_ratio: float = 0.1): 
     # Preprocess the training and tesstttting data
-    X_train = preprocess_data(train_data.drop('Loan_Status', axis=1))
-    y_train = LabelEncoder().fit_transform(train_data['Loan_Status'])
-    X_test = preprocess_data(test_data)    
+    X = preprocess_data(train_data.drop('Loan_Status', axis=1))
+    y = LabelEncoder().fit_transform(train_data['Loan_Status'])
     
-    X_train = add_features(X_train)
-    X_test = add_features(X_test)
+    X = engineer_features(X)
+    return train_test_split(X, y, test_size=test_size_ratio)
     
-    return X_train, y_train, X_test
 
 # Sample Predictions
 def predict_loan_eligibility(model, input_data):
     """Input sample data to get inference for model"""
     input_df = pd.DataFrame([input_data])
     input_df = preprocess_data(input_df)
-    input_df = add_features(input_df)
+    input_df = engineer_features(input_df)
     prediction = model.predict(input_df)[0]
     confidence = model.predict_proba(input_df)[0][1]
     return 'Y' if prediction == 1 else 'N', confidence
