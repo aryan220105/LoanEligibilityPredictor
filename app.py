@@ -33,7 +33,7 @@ def predict_loan_eligibility(input_data, model_choice='RFC'):
     """Preprocess input to make it compatible for model prediction and provide inference"""
     input_df = pd.DataFrame([input_data])    
     input_df = preprocess_data(input_df)
-    input_df = add_features(input_df)
+    input_df = engineer_features(input_df)
     
     # select model based on user's choice
     if model_choice == 'RFC':
